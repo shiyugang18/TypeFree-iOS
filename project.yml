@@ -1,0 +1,81 @@
+name: TypeFree
+options:
+  bundleIdPrefix: com.typefree
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  TypeFreeCore:
+    path: Packages/TypeFreeCore
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 1
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+targets:
+  TypeFree:
+    type: application
+    platform: iOS
+    sources:
+      - App/Sources
+      - Shared
+    dependencies:
+      - package: TypeFreeCore
+      - target: TypeFreeKeyboard
+    entitlements:
+      path: Config/TypeFree.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.typefree.ios.shared
+    info:
+      path: Config/TypeFree-Info.plist
+      properties:
+        CFBundleDisplayName: TypeFree
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen:
+          UIColorName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSMicrophoneUsageDescription: "TypeFree 需要使用麦克风，将你的语音实时识别为文字并润色上屏。语音仅发送给你自己配置的 API 服务商。"
+        ITSAppUsesNonExemptEncryption: false
+
+  TypeFreeKeyboard:
+    type: app-extension
+    platform: iOS
+    sources:
+      - KeyboardExtension/Sources
+      - Shared
+    dependencies:
+      - package: TypeFreeCore
+    entitlements:
+      path: Config/TypeFreeKeyboard.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.typefree.ios.shared
+    info:
+      path: Config/TypeFreeKeyboard-Info.plist
+      properties:
+        CFBundleDisplayName: TypeFree 语音键盘
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSMicrophoneUsageDescription: "TypeFree 键盘需要使用麦克风进行语音听写，音频仅发送给你自己配置的 API 服务商。"
+        RequestsOpenAccess: true
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.keyboard-service
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).KeyboardViewController"
+
+schemes:
+  TypeFree:
+    build:
+      targets:
+        TypeFree: all
+    run:
+      config: Debug

@@ -1,0 +1,59 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  core-tests:
+    name: TypeFreeCore Unit Tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run core package tests
+        run: swift test --package-path Packages/TypeFreeCore
+
+  ios-build:
+    name: Xcode Build (App + Keyboard Extension)
+    runs-on: macos-15
+    needs: core-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for iOS Simulator
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project TypeFree.xcodeproj \
+            -scheme TypeFree \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO \
+            | tail -n 40
+
+      - name: Validate archive (generic iOS device, unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project TypeFree.xcodeproj \
+            -scheme TypeFree \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            | tail -n 40
+
+      - name: Upload simulator app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TypeFree-simulator-build
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/TypeFree.app
+            ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/TypeFreeKeyboard.appex
+          if-no-files-found: warn
