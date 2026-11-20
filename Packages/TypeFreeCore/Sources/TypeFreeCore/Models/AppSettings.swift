@@ -44,7 +44,7 @@ public struct TypeFreeSettings: Codable, Equatable, Sendable {
     /// JSON 编码（Vault 内部使用）。
     public func jsonData() throws -> Data {
         let encoder = JSONEncoder()
-        encoder.sortedKeys = true
+        encoder.outputFormatting = [.sortedKeys]
         return try encoder.encode(self)
     }
 
