@@ -3,6 +3,11 @@ import XCTest
 
 final class ProviderVaultTests: XCTestCase {
 
+    /// 每个测试用独立 suite，避免并行执行时共享存储互相覆盖。
+    private func makeVault() -> ProviderVault {
+        ProviderVault(suiteName: "tf-tests.\(UUID().uuidString)")
+    }
+
     func testObfuscationRoundtrip() throws {
         let payload = try TypeFreeSettings.default.jsonData()
         let obfuscated = ProviderVault.obfuscate(payload)
@@ -24,7 +29,7 @@ final class ProviderVaultTests: XCTestCase {
     }
 
     func testApplyFullPlanSwitchesBothStages() {
-        let vault = ProviderVault()
+        let vault = makeVault()
         vault.update { $0 = TypeFreeSettings.default } // 初始化
         vault.saveCredentials(ProviderCredentials(apiKey: "sk-x"), for: .siliconflow)
         vault.applyFullPlan(sttAndLLM: .siliconflow)
@@ -37,7 +42,7 @@ final class ProviderVaultTests: XCTestCase {
     }
 
     func testApplyLLMBrainKeepsSTT() {
-        let vault = ProviderVault()
+        let vault = makeVault()
         vault.update { $0 = TypeFreeSettings.default }
         vault.applyFullPlan(sttAndLLM: .siliconflow) // 一阶段 = 硅基
         vault.applyLLMBrain(.deepseek)               // 二阶段换 DeepSeek
@@ -49,7 +54,7 @@ final class ProviderVaultTests: XCTestCase {
     }
 
     func testApplyLLMBrainBackfillsSTTForDeepSeek() {
-        let vault = ProviderVault()
+        let vault = makeVault()
         vault.update {
             $0 = TypeFreeSettings.default
             $0.workflow.sttProvider = .bailian // 不支持 REST 整包听写
@@ -62,7 +67,7 @@ final class ProviderVaultTests: XCTestCase {
     }
 
     func testIsConfigured() {
-        let vault = ProviderVault()
+        let vault = makeVault()
         vault.update { $0 = TypeFreeSettings.default }
         XCTAssertFalse(vault.isConfigured(.groq))
         vault.saveCredentials(ProviderCredentials(apiKey: "gsk-x"), for: .groq)
