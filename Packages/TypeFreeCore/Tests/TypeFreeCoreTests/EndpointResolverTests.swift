@@ -52,7 +52,9 @@ final class EndpointResolverTests: XCTestCase {
     func testMissingKeyThrows() {
         let resolver = EndpointResolver(kind: .deepseek, role: .llm, credentials: ProviderCredentials())
         XCTAssertThrowsError(try resolver.authHeaders()) { error in
-            XCTAssertTrue("\(error)".contains("DeepSeek"))
+            // localizedDescription 走 LocalizedError.errorDescription，含「DeepSeek」人话提示；
+            // 直接 "\(error)" 只会打印枚举 case 名（小写 deepseek）。
+            XCTAssertTrue(error.localizedDescription.contains("DeepSeek"), "\(error)")
         }
     }
 
