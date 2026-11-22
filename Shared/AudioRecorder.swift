@@ -62,7 +62,7 @@ final class AudioRecorder {
             throw RecorderError.conversionFailed("转换器创建失败")
         }
 
-        input.removeTap(forBus: 0)
+        input.removeTap(onBus: 0)
         input.installTap(onBus: 0, bufferSize: 2048, format: inputFormat) { [weak self] buffer, _ in
             self?.consume(buffer: buffer, converter: converter)
         }
@@ -96,7 +96,7 @@ final class AudioRecorder {
     // MARK: - Private
 
     private func teardown() {
-        engine.inputNode.removeTap(forBus: 0)
+        engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
         isRunning = false

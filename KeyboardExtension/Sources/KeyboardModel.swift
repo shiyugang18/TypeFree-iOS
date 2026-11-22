@@ -223,7 +223,7 @@ final class KeyboardModel: ObservableObject {
             do {
                 let credentials = self.vault.credentials(for: settingsSnapshot.workflow.llmProvider)
                 guard !credentials.isEmpty else {
-                    throw PipelineError.llmNotConfigured(settingsSnapshot.workflow.llmProvider)
+                    throw VoicePipeline.PipelineError.llmNotConfigured(settingsSnapshot.workflow.llmProvider)
                 }
                 let engine = try LLMFactory.make(
                     provider: settingsSnapshot.workflow.llmProvider,
