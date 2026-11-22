@@ -91,7 +91,7 @@ struct APIConfigView: View {
                 role: .stt,
                 model: Binding(
                     get: { store.settings.workflow.sttModel },
-                    set: { store.update { $0.workflow.sttModel = $0 } }
+                    set: { newModel in store.update { $0.workflow.sttModel = newModel } }
                 ),
                 options: supportedSTTProviders,
                 providerBinding: Binding(
@@ -106,7 +106,7 @@ struct APIConfigView: View {
             )
             Toggle("🧠 二阶段润色（关闭 = 极速直出）", isOn: Binding(
                 get: { store.settings.workflow.polishEnabled },
-                set: { store.update { $0.workflow.polishEnabled = $0 } }
+                set: { enabled in store.update { $0.workflow.polishEnabled = enabled } }
             ))
             if store.settings.workflow.polishEnabled {
                 workflowRow(
@@ -114,7 +114,7 @@ struct APIConfigView: View {
                     role: .llm,
                     model: Binding(
                         get: { store.settings.workflow.llmModel },
-                        set: { store.update { $0.workflow.llmModel = $0 } }
+                        set: { newModel in store.update { $0.workflow.llmModel = newModel } }
                     ),
                     options: ProviderKind.allCases,
                     providerBinding: Binding(
@@ -129,7 +129,7 @@ struct APIConfigView: View {
                 )
                 Picker("思考模式", selection: Binding(
                     get: { store.settings.workflow.llmThinking },
-                    set: { store.update { $0.workflow.llmThinking = $0 } }
+                    set: { newMode in store.update { $0.workflow.llmThinking = newMode } }
                 )) {
                     ForEach(ThinkingMode.allCases, id: \.self) { mode in
                         Text(mode.rawValue).tag(mode)
@@ -190,15 +190,15 @@ struct APIConfigView: View {
         Group {
             Toggle("🛡️ 端侧敏感信息脱敏", isOn: Binding(
                 get: { store.settings.redactionEnabled },
-                set: { store.update { $0.redactionEnabled = $0 } }
+                set: { enabled in store.update { $0.redactionEnabled = enabled } }
             ))
             Toggle("🫥 无痕模式（不记历史）", isOn: Binding(
                 get: { store.settings.incognito },
-                set: { store.update { $0.incognito = $0 } }
+                set: { enabled in store.update { $0.incognito = enabled } }
             ))
             Picker("历史留存", selection: Binding(
                 get: { store.settings.historyDays },
-                set: { store.update { $0.historyDays = $0 } }
+                set: { days in store.update { $0.historyDays = days } }
             )) {
                 Text("立即清除").tag(0)
                 Text("3 天").tag(3)
