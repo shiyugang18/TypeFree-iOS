@@ -46,6 +46,9 @@ targets:
           - UIInterfaceOrientationPortrait
         NSMicrophoneUsageDescription: "TypeFree 需要使用麦克风，将你的语音实时识别为文字并润色上屏。语音仅发送给你自己配置的 API 服务商。"
         ITSAppUsesNonExemptEncryption: false
+        # BYOK 场景允许自定义网关使用 http://（本地网关 / 内网中转常见形态）
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
 
   TypeFreeKeyboard:
     type: app-extension
