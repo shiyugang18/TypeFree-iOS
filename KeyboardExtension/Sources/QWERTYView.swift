@@ -114,6 +114,17 @@ struct QWERTYView: View {
         .buttonStyle(.plain)
     }
 
+    private func keyButton(title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 16, weight: .medium))
+                .frame(maxWidth: .infinity, minHeight: 34)
+                .background(Color(UIColor.tertiarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 7))
+        }
+        .buttonStyle(.plain)
+    }
+
     private func display(for key: String) -> String {
         (!symbolMode && shift) ? key.uppercased() : key
     }
