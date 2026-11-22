@@ -48,7 +48,7 @@ public final class KeyboardViewController: UIInputViewController {
         installHeightConstraint()
     }
 
-    public override func textDidChange(_ textInput: TextInputTraits?) {
+    public override func textDidChange(_ textInput: UITextInput?) {
         // 宿主输入框变化（v0.1 不做场景感知，Phase 2 接入）。
     }
 
