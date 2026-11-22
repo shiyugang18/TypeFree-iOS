@@ -124,6 +124,26 @@ jobs:
           echo "======== ERROR SUMMARY（复制本段即可）========"
           grep -nE " error:" /tmp/xcodebuild-device.log | head -n 60 || true
 
+      # 未签名真机包：Sideloadly / AltStore / 爱思助手 等工具可直接重签安装
+      - name: 打包真机 unsigned IPA
+        run: |
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "TypeFree.app" -path "*-iphoneos*" | head -n 1)
+          echo "找到 APP: $APP"
+          [ -n "$APP" ] || { echo "未找到 iphoneos TypeFree.app"; exit 1; }
+          echo "--- PlugIns（应含键盘扩展）---"
+          ls "$APP/PlugIns/" || true
+          mkdir -p ipa-tmp/Payload
+          cp -R "$APP" ipa-tmp/Payload/
+          cd ipa-tmp && zip -qry ../TypeFree-unsigned.ipa Payload && cd ..
+          ls -lh TypeFree-unsigned.ipa
+
+      - name: Upload device IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TypeFree-device-ipa
+          path: TypeFree-unsigned.ipa
+          if-no-files-found: error
+
       - name: 失败日志外送到 ci-logs 分支
         if: failure()
         continue-on-error: true
