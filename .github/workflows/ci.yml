@@ -76,7 +76,7 @@ jobs:
           xcodebuild build \
             -project TypeFree.xcodeproj \
             -scheme TypeFree \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee /tmp/xcodebuild-sim.log | tail -n 40
 
