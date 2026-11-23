@@ -134,6 +134,8 @@ struct ProviderEditorView: View {
             return "阿里云百炼：一个 sk- Key 即可驱动实时流式听写（Phase 2 接入 iOS）与 Qwen 大模型。"
         case .volcengine:
             return "火山引擎：豆包语音（SeedASR 流式，Phase 2）与火山方舟（豆包 LLM）分属两个控制台，凭证分开填写。"
+        case .zhipu:
+            return "智谱 GLM：一个 API Key 通吃全链路——glm-asr-2512 听音 + GLM 系列大模型润色，OpenAI 兼容协议。"
         case .gemini:
             return "Google Gemini：v1beta REST。听音直出将在 Phase 2 支持，当前可作二阶段大脑。"
         case .groq:

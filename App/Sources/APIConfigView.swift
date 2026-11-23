@@ -67,6 +67,7 @@ struct APIConfigView: View {
         case .siliconflow: return "waveform"
         case .bailian: return "cloud"
         case .volcengine: return "flame"
+        case .zhipu: return "text.bubble"
         case .gemini: return "sparkles"
         case .groq: return "hare"
         case .ollama: return "desktopcomputer"
@@ -141,7 +142,7 @@ struct APIConfigView: View {
     }
 
     private var supportedSTTProviders: [ProviderKind] {
-        [.deepseek, .siliconflow, .groq, .custom]
+        [.deepseek, .siliconflow, .zhipu, .groq, .custom]
     }
 
     private func workflowRow(
