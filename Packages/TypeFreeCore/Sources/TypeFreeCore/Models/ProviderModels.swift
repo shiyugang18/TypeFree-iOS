@@ -6,6 +6,7 @@ public enum ProviderKind: String, Codable, CaseIterable, Identifiable, Sendable 
     case siliconflow      // 硅基流动
     case bailian          // 阿里云百炼（通义千问 / DashScope）
     case volcengine       // 火山引擎（豆包：方舟 LLM + 语音 SeedASR）
+    case zhipu            // 智谱（GLM 系列大模型 + GLM-ASR 语音识别）
     case gemini
     case groq
     case ollama
@@ -19,6 +20,7 @@ public enum ProviderKind: String, Codable, CaseIterable, Identifiable, Sendable 
         case .siliconflow: return "硅基流动"
         case .bailian: return "阿里云百炼"
         case .volcengine: return "火山引擎豆包"
+        case .zhipu: return "智谱 GLM"
         case .gemini: return "Google Gemini"
         case .groq: return "Groq"
         case .ollama: return "本地 Ollama"
@@ -29,7 +31,7 @@ public enum ProviderKind: String, Codable, CaseIterable, Identifiable, Sendable 
     /// 每个凭证槽需要填写哪些字段。
     public var credentialFields: [CredentialField] {
         switch self {
-        case .deepseek, .siliconflow, .bailian, .groq:
+        case .deepseek, .siliconflow, .bailian, .zhipu, .groq:
             return [.apiKey]
         case .volcengine:
             // 方舟（文本大模型）与豆包语音是两个独立入口，分开填写。
@@ -146,6 +148,7 @@ public enum ProviderDefaults {
         case .siliconflow: return "https://api.siliconflow.cn/v1"
         case .bailian: return "https://dashscope.aliyuncs.com/compatible-mode/v1"
         case .volcengine: return "https://ark.cn-beijing.volces.com/api/v3"
+        case .zhipu: return "https://open.bigmodel.cn/api/paas/v4"
         case .gemini: return "https://generativelanguage.googleapis.com/v1beta"
         case .groq: return "https://api.groq.com/openai/v1"
         case .ollama: return "http://127.0.0.1:11434/v1"
@@ -160,6 +163,7 @@ public enum ProviderDefaults {
         case .siliconflow: return "FunAudioLLM/SenseVoiceSmall"
         case .bailian: return "paraformer-realtime-v2"
         case .volcengine: return "bigmodel" // SeedASR 2.0
+        case .zhipu: return "glm-asr-2512"
         case .gemini: return "gemini-2.0-flash"
         case .groq: return "whisper-large-v3"
         case .ollama: return ""
@@ -174,6 +178,7 @@ public enum ProviderDefaults {
         case .siliconflow: return "Qwen/Qwen2.5-7B-Instruct"
         case .bailian: return "qwen-turbo-latest"
         case .volcengine: return "doubao-seed-2-1-lite-260915"
+        case .zhipu: return "glm-4.6"
         case .gemini: return "gemini-2.0-flash"
         case .groq: return "llama-3.3-70b-versatile"
         case .ollama: return "qwen2.5:7b"
@@ -184,7 +189,7 @@ public enum ProviderDefaults {
     /// 该服务商是否支持 REST 整包听写（iOS v0.1 支持的形态）。
     public static func supportsRESTSTT(_ kind: ProviderKind) -> Bool {
         switch kind {
-        case .deepseek, .siliconflow, .groq, .custom:
+        case .deepseek, .siliconflow, .zhipu, .groq, .custom:
             return true
         default:
             // gemini 亦可用 audio 直出，v0.1 先不启用；bailian/volcengine 为 WSS 流式，Phase 2。

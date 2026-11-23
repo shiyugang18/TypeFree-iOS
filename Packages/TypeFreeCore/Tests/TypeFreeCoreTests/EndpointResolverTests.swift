@@ -49,6 +49,18 @@ final class EndpointResolverTests: XCTestCase {
         XCTAssertEqual(headers["x-goog-api-key"], "g")
     }
 
+    func testZhipuOpenAICompatEndpoints() throws {
+        let resolver = EndpointResolver(kind: .zhipu, role: .stt, credentials: ProviderCredentials(apiKey: "z"))
+        XCTAssertEqual(try resolver.sttTranscriptionURL().absoluteString,
+                       "https://open.bigmodel.cn/api/paas/v4/audio/transcriptions")
+        XCTAssertFalse(resolver.usesStrictFileOnlyASR)
+
+        let llm = EndpointResolver(kind: .zhipu, role: .llm, credentials: ProviderCredentials(apiKey: "z"))
+        XCTAssertEqual(try llm.chatCompletionsURL().absoluteString,
+                       "https://open.bigmodel.cn/api/paas/v4/chat/completions")
+        XCTAssertEqual(try llm.authHeaders()["Authorization"], "Bearer z")
+    }
+
     func testMissingKeyThrows() {
         let resolver = EndpointResolver(kind: .deepseek, role: .llm, credentials: ProviderCredentials())
         XCTAssertThrowsError(try resolver.authHeaders()) { error in
