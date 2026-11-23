@@ -17,3 +17,5 @@ Packages/**/Package.resolved
 
 # Others
 *.log
+build/
+Config/
