@@ -73,12 +73,14 @@ public struct HTTPClient: Sendable {
         return data
     }
 
-    /// 打开流式响应（SSE），逐块产出文本分片。
-    public func streamBytes(
+    /// 打开流式响应（SSE），逐行产出文本（每行以换行符结尾，流末尾的残行除外）。
+    /// 必须攒成整行再交付：bytes 是逐字节迭代的，而中文等多字节 UTF-8 字符被拆成
+    /// 单字节后无法解码（String(data:encoding:) 返回 nil），会被上层当作无效分片静默丢弃。
+    public func streamLines(
         url: URL,
         headers: [String: String],
         body: Data
-    ) -> AsyncThrowingStream<Data, Error> {
+    ) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
                 var request = URLRequest(url: url)
@@ -98,9 +100,11 @@ public struct HTTPClient: Sendable {
                         for try await byte in bytes { errData.append(byte) }
                         throw HTTPError.badStatus(status, String(data: errData, encoding: .utf8) ?? "")
                     }
+                    var lines = LineAssembler()
                     for try await byte in bytes {
-                        continuation.yield(Data([byte]))
+                        if let line = lines.feed(byte) { continuation.yield(line) }
                     }
+                    if let tail = lines.flush() { continuation.yield(tail) }
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)
@@ -110,5 +114,31 @@ public struct HTTPClient: Sendable {
                 task.cancel()
             }
         }
+    }
+}
+
+/// 把逐字节到达的网络分片攒成整行文本。
+public struct LineAssembler: Sendable {
+    private var buffer = Data()
+
+    public init() {}
+
+    /// 喂入一个字节；遇到换行符时返回已凑齐的整行（含换行符）。
+    public mutating func feed(_ byte: UInt8) -> String? {
+        guard byte == 0x0A else {
+            buffer.append(byte)
+            return nil
+        }
+        let line = String(data: buffer, encoding: .utf8).map { $0 + "\n" }
+        buffer.removeAll(keepingCapacity: true)
+        return line
+    }
+
+    /// 流结束时取出残余内容（没有换行结尾的最后一行）。
+    public mutating func flush() -> String? {
+        guard !buffer.isEmpty else { return nil }
+        let tail = String(data: buffer, encoding: .utf8)
+        buffer.removeAll()
+        return tail
     }
 }

@@ -41,3 +41,32 @@ final class SSEParserTests: XCTestCase {
         XCTAssertEqual(events, ["payload"])
     }
 }
+
+final class LineAssemblerTests: XCTestCase {
+
+    /// 回归：流式分片逐字节到达时，中文（多字节 UTF-8）曾因单字节解码失败被整段丢弃。
+    func testChineseSurvivesByteByByteFeed() {
+        let payload = "data: {\"delta\":{\"content\":\"明天4点开会。\"}}\n\n"
+        var assembler = LineAssembler()
+        var parser = SSEParser()
+        var events: [String] = []
+
+        for byte in Array(payload.utf8) {
+            if let line = assembler.feed(byte) {
+                events += parser.feed(line)
+            }
+        }
+        events += parser.flush()
+
+        XCTAssertEqual(events, ["{\"delta\":{\"content\":\"明天4点开会。\"}}"])
+    }
+
+    func testFlushTrailingLineWithoutNewline() {
+        var assembler = LineAssembler()
+        for byte in Array("data: 尾".utf8) {
+            XCTAssertNil(assembler.feed(byte))
+        }
+        XCTAssertEqual(assembler.flush(), "data: 尾")
+        XCTAssertNil(assembler.flush())
+    }
+}

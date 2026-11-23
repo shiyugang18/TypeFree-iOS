@@ -90,9 +90,8 @@ public struct OpenAICompatLLMEngine: LLMEngine {
                     let bodyData = try JSONEncoder().encode(body)
 
                     var parser = SSEParser()
-                    for try await chunk in client.streamBytes(url: url, headers: headers, body: bodyData) {
-                        guard let text = String(data: chunk, encoding: .utf8) else { continue }
-                        for event in parser.feed(text) {
+                    for try await line in client.streamLines(url: url, headers: headers, body: bodyData) {
+                        for event in parser.feed(line) {
                             guard event != "[DONE]" else { continue }
                             guard let jsonData = event.data(using: .utf8),
                                   let decoded = try? JSONDecoder().decode(ResponseBody.self, from: jsonData),
@@ -182,9 +181,8 @@ public struct GeminiLLMEngine: LLMEngine {
                     let bodyData = try JSONEncoder().encode(body)
 
                     var parser = SSEParser()
-                    for try await chunk in client.streamBytes(url: url, headers: headers, body: bodyData) {
-                        guard let text = String(data: chunk, encoding: .utf8) else { continue }
-                        for event in parser.feed(text) {
+                    for try await line in client.streamLines(url: url, headers: headers, body: bodyData) {
+                        for event in parser.feed(line) {
                             guard let jsonData = event.data(using: .utf8),
                                   let decoded = try? JSONDecoder().decode(ResponseBody.self, from: jsonData),
                                   let delta = decoded.candidates?.first?.content?.parts?
