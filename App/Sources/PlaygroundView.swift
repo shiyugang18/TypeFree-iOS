@@ -14,15 +14,22 @@ struct PlaygroundView: View {
                 phaseBanner
 
                 ScrollView {
-                    Text(engine.resultText.isEmpty
-                         ? "按住下方麦克风说话，识别与润色结果会显示在这里。"
-                         : engine.resultText)
-                        .font(.system(size: 15))
-                        .foregroundStyle(engine.resultText.isEmpty ? .secondary : .primary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(12)
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(engine.resultText.isEmpty
+                             ? "按住下方麦克风说话，识别与润色结果会显示在这里。"
+                             : engine.resultText)
+                            .font(.system(size: 15))
+                            .foregroundStyle(engine.resultText.isEmpty ? .secondary : .primary)
+                        if !engine.rawText.isEmpty, engine.rawText != engine.resultText {
+                            Text("🎙️ 原始转写：\(engine.rawText)")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
                 if let error = engine.errorMessage {
@@ -170,6 +177,9 @@ final class PlaygroundModel: ObservableObject {
                 self.rawText = outcome.rawText
                 self.resultText = outcome.finalText
                 self.phase = .idle
+                if outcome.finalText.isEmpty {
+                    self.errorMessage = "没有识别到人声：请按住不放，说完再松手"
+                }
                 if !settings.incognito {
                     HistoryStore(vault: vault).append(HistoryItem(
                         intent: "试场听写",

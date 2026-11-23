@@ -92,6 +92,10 @@ public struct VoicePipeline: Sendable {
                 engine: engine,
                 redactionEnabled: settings.redactionEnabled
             )
+            // 润色结果为空时回退原文，避免上屏空白。
+            if finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                finalText = rawText
+            }
         }
 
         onPhase?(.done)

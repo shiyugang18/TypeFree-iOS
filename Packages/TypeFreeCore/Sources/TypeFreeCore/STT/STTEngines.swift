@@ -48,8 +48,11 @@ public struct DeepSeekASREngine: STTEngine {
     /// 宽容解析：尝试多种响应结构（text / data.text / result.text / segments 拼接）。
     static func extractText(from data: Data) throws -> String {
         guard let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            // 有些实现直接返回纯文本。
-            if let text = String(data: data, encoding: .utf8), !text.isEmpty {
+            // 有些实现直接返回纯文本。但网关把未知路径回落到前端页面时同样回 200 + HTML，
+            // 那不是转写结果，不能当成原文送进润色。
+            if let text = String(data: data, encoding: .utf8)?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+               !text.isEmpty, !text.hasPrefix("<") {
                 return text
             }
             throw STTError.badResponse
@@ -107,7 +110,7 @@ public enum STTError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .badResponse:
-            return "语音识别服务返回了无法解析的响应"
+            return "语音识别服务返回了无法解析的响应（请确认该服务商的地址支持 /audio/transcriptions 语音转写接口）"
         case .providerMessage(let message):
             return "语音识别服务报错：\(message)"
         }
